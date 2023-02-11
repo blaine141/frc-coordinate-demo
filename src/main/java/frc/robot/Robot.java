@@ -71,11 +71,6 @@ public class Robot extends TimedRobot {
     //   fieldObject.setPose(tagPose);
     // }
 
-    Rotation3d test = new Rotation3d(1, .5, .3);
-    double roll = test.getX();
-    double pitch = test.getY();
-    double yaw = test.getZ();
-
   }
 
   @Override
