@@ -5,7 +5,6 @@
 package frc.robot;
 
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
@@ -14,7 +13,6 @@ import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.AnalogGyro;
 import edu.wpi.first.wpilibj.simulation.AnalogGyroSim;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 /** Represents a swerve drive style drivetrain. */
@@ -93,37 +91,8 @@ public class Drivetrain extends SubsystemBase {
 
   @Override
   public void periodic() {
-    // Get updated pose info from SmartDashboard
-    double x = SmartDashboard.getNumber("RobotWRTAlliance X", 0);
-    double y = SmartDashboard.getNumber("RobotWRTAlliance Y", 0);
-    double angle = SmartDashboard.getNumber("RobotWRTAlliance Angle", 0);
-
-    // Update our odometry if the user has changed our pose in SmartDashboard
-    if (x != getRobotPose().getTranslation().getX() || y != getRobotPose().getTranslation().getY()
-        || angle != getRobotPose().getRotation().getDegrees()) {
-
-      // Reset our gyro to the new angle
-      m_gyroSim.setAngle(-angle);
-
-      // Reset our odometry to the new pose
-      m_odometry.resetPosition(m_gyro.getRotation2d(), new SwerveModulePosition[] {
-          m_frontLeft.getPosition(),
-          m_frontRight.getPosition(),
-          m_backLeft.getPosition(),
-          m_backRight.getPosition()
-      }, new Pose2d(x, y, m_gyro.getRotation2d()));
-    }
-
     // Update our odometry with robot movement
     updateOdometry();
-
-    // Update the SmartDashboard with our current pose
-    Pose2d botWRTField = getRobotPose();
-    Translation2d translation = botWRTField.getTranslation();
-    Rotation2d rotation = botWRTField.getRotation();
-    SmartDashboard.putNumber("RobotWRTAlliance X", translation.getX());
-    SmartDashboard.putNumber("RobotWRTAlliance Y", translation.getY());
-    SmartDashboard.putNumber("RobotWRTAlliance Angle", rotation.getDegrees());
   }
 
   @Override
