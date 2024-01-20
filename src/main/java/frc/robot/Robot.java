@@ -94,7 +94,7 @@ public class Robot extends TimedRobot {
     Pose3d allianceWRTField3d = pose2dToPose3d(allianceWRTField);
 
     // Display robot location
-    Pose2d botWRTAlliance = m_swerve.getRobotPose();
+    Pose2d botWRTAlliance = m_swerve.getRobotPose();    // << Look here
     Pose2d botWRTField = botWRTAlliance.relativeTo(fieldWRTAlliance);
     botWRTAlliancePublisher.set(botWRTAlliance);
     m_field.setRobotPose(botWRTAlliance);
@@ -105,7 +105,7 @@ public class Robot extends TimedRobot {
     // Get important transforms
     Transform2d robotToGoal = m_goalWRTField.minus(botWRTField);
     Transform2d robotToTag1 = tag1WRTField.minus(botWRTField);
-    Transform2d tag1ToRobot = robotToTag1.inverse();
+    Transform2d tag1ToRobot = robotToTag1.inverse();        // << Look here
     Transform2d goalToRobot = robotToGoal.inverse();
 
     // Publish transforms
@@ -135,9 +135,29 @@ public class Robot extends TimedRobot {
       m_field.getObject("Tag " + tag.ID).setPose(tagWRTAlliance.toPose2d());
     }
 
-      
 
-    periodic3D(botWRTField, botWRTAlliance);
+    // Get the 3D pose of the robot
+    Pose3d botWRTField3d = pose2dToPose3d(botWRTField);
+    Pose3d botWRTAlliance3d = pose2dToPose3d(botWRTAlliance);
+
+    // Get the 3D pose of tag 1
+    Pose3d tag1WRTField3d = fieldLayout.getTags().get(0).pose;
+
+    // Get the 3D pose of the camera
+    Pose3d angledCameraWRTAlliance = botWRTAlliance3d.transformBy(m_botToAngledCamera);
+    Pose3d angledCameraWRTField = botWRTField3d.transformBy(m_botToAngledCamera);       // << Look here
+    Pose3d frontCameraWRTAlliance = botWRTAlliance3d.transformBy(m_botToFrontCamera);
+    Pose3d frontCameraWRTField = botWRTField3d.transformBy(m_botToFrontCamera);
+
+    // Get the interesting transforms
+    Transform3d angledCameraToTag1 = tag1WRTField3d.minus(angledCameraWRTField);
+    Transform3d frontCameratoTag1 = tag1WRTField3d.minus(frontCameraWRTField);
+
+    // Publish to Smart Dashboard
+    angledCameraToTag1Publisher.set(angledCameraToTag1);
+    frontCameraToTag1Publisher.set(frontCameratoTag1);
+    angledCameraWRTAlliancePublisher.set(angledCameraWRTAlliance);
+    frontCameraWRTAlliancePublisher.set(frontCameraWRTAlliance);
   }
 
   @Override
@@ -181,30 +201,5 @@ public class Robot extends TimedRobot {
   private static Pose3d pose2dToPose3d(Pose2d pose2d) {
     return new Pose3d(pose2d.getX(), pose2d.getY(), 0,
         new Rotation3d(0, 0, pose2d.getRotation().getRadians()));
-  }
-
-  private void periodic3D(Pose2d botWRTField2d, Pose2d botWRTAlliance2d) {
-    // Get the 3D pose of the robot
-    var botWRTField = pose2dToPose3d(botWRTField2d);
-    var botWRTAlliance = pose2dToPose3d(botWRTAlliance2d);
-
-    // Get the 3D pose of tag 1
-    var tag1WRTField = fieldLayout.getTags().get(0).pose;
-
-    // Get the 3D pose of the camera
-    var angledCameraWRTAlliance = botWRTAlliance.transformBy(m_botToAngledCamera);
-    var angledCameraWRTField = botWRTField.transformBy(m_botToAngledCamera);
-    var frontCameraWRTAlliance = botWRTAlliance.transformBy(m_botToFrontCamera);
-    var frontCameraWRTField = botWRTField.transformBy(m_botToFrontCamera);
-
-    // Get the interesting transforms
-    var angledCameraToTag1 = tag1WRTField.minus(angledCameraWRTField);
-    var frontCameratoTag1 = tag1WRTField.minus(frontCameraWRTField);
-
-    // Publish to Smart Dashboard
-    angledCameraToTag1Publisher.set(angledCameraToTag1);
-    frontCameraToTag1Publisher.set(frontCameratoTag1);
-    angledCameraWRTAlliancePublisher.set(angledCameraWRTAlliance);
-    frontCameraWRTAlliancePublisher.set(frontCameraWRTAlliance);
   }
 }
